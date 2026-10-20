@@ -1894,10 +1894,14 @@ def save_to_sqlite(name, birth, report, history, ptype="single"):
     try:
         conn = sqlite3.connect(LOCAL_DB_PATH)
         c = conn.cursor()
+        name, birth, ptype = normalize_record_identity(name, birth, ptype)
         history_str = history_to_text(history)
         date_now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-        c.execute("SELECT id FROM records WHERE name=? AND birth_info=?", (str(name), str(birth)))
+        c.execute(
+            "SELECT id FROM records WHERE name=? AND birth_info=? AND ptype=?",
+            (name, birth, ptype),
+        )
         row = c.fetchone()
 
         if row:
@@ -1928,7 +1932,11 @@ def save_to_gsheets(name, birth, report, history, ptype="single"):
         name, birth, ptype = normalize_record_identity(name, birth, ptype)
         history_str = history_to_text(history)
 
-        matched = (df["name"].astype(str) == name) & (df["birth_info"].astype(str) == birth)
+        matched = (
+            (df["name"].astype(str) == name)
+            & (df["birth_info"].astype(str) == birth)
+            & (df["ptype"].astype(str) == ptype)
+        )
         if matched.any():
             idx = df.index[matched][0]
             if not int(df.loc[idx, "id"] or 0):
