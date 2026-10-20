@@ -20,7 +20,7 @@ streamlit run streamlit_app.py
 
 ## 发布到 GitHub 和 Streamlit Community Cloud
 
-建议先建**私有 GitHub 仓库**。这是主播使用的内容生成工作台，持有付费 API 配置并可访问咨询档案；不要把它当作 TikTok 订阅用户的自动登录页面。应用还要求 `[app_access]` 访问口令作为额外保护。共享口令适合小范围工作台使用，不替代正式的账号登录系统。
+本项目的 GitHub 仓库是**公开的**，源代码和生成规则对所有人可见。真实 API Key、访问口令和咨询档案不得提交到仓库。这是主播使用的内容生成工作台，持有付费 API 配置并可访问咨询档案；不要把它当作 TikTok 订阅用户的自动登录页面。应用要求 `[app_access]` 访问口令作为额外保护。共享口令适合小范围工作台使用，不替代正式的账号登录系统。
 
 在 Streamlit Community Cloud 新建应用时，选择这个独立仓库的 `main` 分支，入口填 `streamlit_app.py`。在高级设置的 Secrets 中填写与示例文件相同的配置项和真实值；不要把真实密钥写进 GitHub 文件。部署成功后，先检查访问口令，再做一次生成测试。
 
