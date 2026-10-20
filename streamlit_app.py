@@ -2314,7 +2314,10 @@ with st.sidebar:
             st.info("没有找到匹配的人名档案。")
         else:
             record_options = {
-                f"{row.get('name', '')} (生日: {row.get('birth_info', '')}) [{row.get('date', '')}]": row
+                (
+                    f"{row.get('name', '')} (生日: {row.get('birth_info', '')}) "
+                    f"[类型: {row.get('ptype') or 'single'}] [{row.get('date', '')}]"
+                ): row
                 for row in filtered_history
             }
             selected_label = st.selectbox(
