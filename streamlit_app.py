@@ -356,6 +356,38 @@ st.set_page_config(
 )
 
 
+def reset_reader_preferences():
+    st.session_state.reader_font_size = 18
+    st.session_state.reader_background = "#FFFDF6"
+
+
+def render_reader_styles(font_size, background):
+    """Keep reading preferences inside the generated report panels only."""
+    rgb = [int(background[index:index + 2], 16) / 255 for index in (1, 3, 5)]
+    linear = [value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4 for value in rgb]
+    luminance = sum(value * weight for value, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+    text_color = "#000000" if luminance > 0.179 else "#FFFFFF"
+    selectors = ".st-key-main_report_reader, .st-key-case_story_reader"
+    st.html(f"""
+    <style>
+    :is({selectors}) {{
+        background-color: {background};
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+    }}
+    :is({selectors}) [data-testid="stMarkdownContainer"],
+    :is({selectors}) [data-testid="stMarkdownContainer"] * {{ color: {text_color} !important; }}
+    :is({selectors}) [data-testid="stMarkdownContainer"] :is(p, li, blockquote) {{
+        font-size: {font_size}px !important;
+        line-height: 1.75;
+    }}
+    :is({selectors}) [data-testid="stMarkdownContainer"] h1 {{ font-size: {font_size * 1.8:.1f}px !important; }}
+    :is({selectors}) [data-testid="stMarkdownContainer"] h2 {{ font-size: {font_size * 1.5:.1f}px !important; }}
+    :is({selectors}) [data-testid="stMarkdownContainer"] h3 {{ font-size: {font_size * 1.25:.1f}px !important; }}
+    </style>
+    """)
+
+
 def require_workspace_access():
     """Protect API usage and consultation archives before rendering the workbench."""
     try:
@@ -2198,6 +2230,13 @@ with st.sidebar:
     st.title("✦ 会员版设置")
     st.caption("模型连接、直播模式与咨询档案")
 
+    with st.expander("阅读显示设置", expanded=True):
+        reader_font_size = st.slider("口播稿字号", 14, 32, 18, key="reader_font_size")
+        reader_background = st.color_picker("口播稿背景颜色", "#FFFDF6", key="reader_background")
+        st.button("恢复默认显示", on_click=reset_reader_preferences, key="reset_reader_preferences")
+
+    render_reader_styles(reader_font_size, reader_background)
+
     # 【完整版深度推演引擎】：慢而强，用于完整双语深度报告
     st.subheader("完整报告模型")
     api_key_full_secret = get_config("openai_full", "api_key", "OPENAI_FULL_API_KEY")
@@ -3278,7 +3317,8 @@ if st.session_state.get("case_story_report"):
     with tab_case_story:
         st.markdown("---")
         st.subheader("🎙️ 五行案例故事")
-        st.markdown(st.session_state.case_story_report)
+        with st.container(key="case_story_reader"):
+            st.markdown(st.session_state.case_story_report)
         if st.session_state.get("case_story_review_status"):
             st.caption(f"案例状态：{st.session_state.case_story_review_status}")
         if st.session_state.get("case_story_save_error"):
@@ -3297,7 +3337,8 @@ if st.session_state.get("case_story_report"):
 if st.session_state.main_report:
     st.markdown("---")
     st.subheader("会员测算口播稿")
-    st.markdown(st.session_state.main_report) 
+    with st.container(key="main_report_reader"):
+        st.markdown(st.session_state.main_report)
 
     if st.session_state.get("last_review_status"):
         st.caption(f"文案复核状态：{st.session_state.last_review_status}")
